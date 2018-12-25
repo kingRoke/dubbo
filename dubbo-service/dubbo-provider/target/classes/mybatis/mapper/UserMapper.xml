@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace必须指向Dao接口 -->
+<mapper namespace="com.roke.cn.repository.mybatis.IUserMybatisDao">
+
+
+	<!-- 用户注册，存入数据库 -->
+	<insert id="insert" parameterType="user">
+		insert into user
+		(
+		id,
+		name,
+		pwd,	
+		createTime,
+		updateTime	
+		)
+		values
+		(
+		#{id},		
+		#{name},
+		#{pwd},		
+		now(),
+		now()	
+		)
+	</insert>
+
+	<!-- 
+	<select id="getUser" parameterType="user" resultType="user">
+		select
+		IFNULL(t.id,'') AS id,
+		IFNULL(t.ssoId,'') AS ssoId,
+		IFNULL(t.name,'') AS name,
+		IFNULL(t.tel,'') AS tel,
+		IFNULL(t.cardNumber_cyc,'') AS cardNumber_cyc,
+		IFNULL(t.cardNumber_syc,'') AS cardNumber_syc,
+		IFNULL(t.uid,'') AS uid,
+		IFNULL(t.uid_cyc,'') AS uid_cyc,
+		IFNULL(t.uid_syc,'') AS uid_syc,
+		IFNULL(t.type,'') AS type,
+		IFNULL(t.sex,'') AS sex,
+		IFNULL(t.birthday,'') AS birthday,
+		IFNULL(t.registerTime,'') AS registerTime,
+		IFNULL(t.updateTime,'') AS updateTime,
+		IFNULL(t.lastLogin,'') AS lastLogin,
+		IFNULL(t.headId,'') AS headId,
+		IFNULL(m.url,'') AS headImg
+		from user t left join attachment
+		m on
+		t.headId=m.id
+		<where>
+			<if test="id != null and id != ''">
+				t.id = #{id}
+			</if>
+			<if test="tel != null and tel != ''">
+				and t.tel = #{tel}
+			</if>
+			<if test="ssoId != null and ssoId != ''">
+				and t.ssoId = #{ssoId}
+			</if>
+		</where>
+	</select>
+
+	更改用户信息
+	<update id="updateUser" parameterType="user">
+		update user
+		<set>
+			<if test="tel != null ">
+				tel = #{tel},
+			</if>
+			<if test="name != null ">
+				name = #{name},
+			</if>
+			<if test="sex != null ">
+				sex = #{sex},
+			</if>
+			<if test="birthday != null ">
+				birthday = #{birthday},
+			</if>
+			<if test="updateTime != null">
+				updateTime = #{updateTime},
+			</if>
+			<if test="headId != null and headId!=''">
+				headId = #{headId},
+			</if>
+			<if test="mac != null">
+				mac = #{mac},
+			</if>
+
+			<if test="cardNumber_cyc != null and cardNumber_cyc != ''">
+				cardNumber_cyc = #{cardNumber_cyc},
+			</if>
+			<if test="cardNumber_syc != null and cardNumber_syc != ''">
+				cardNumber_syc = #{cardNumber_syc},
+			</if>
+			<if test="uid != null and uid != ''">
+				uid = #{uid},
+			</if>
+			<if test="uid_cyc != null and uid_cyc != ''">
+				uid_cyc = #{uid_cyc},
+			</if>
+			<if test="uid_syc != null and uid_syc != ''">
+				uid_syc = #{uid_syc},
+			</if>
+
+			<if test="lastLogin != null">
+				lastLogin = #{lastLogin}
+			</if>
+
+		</set>
+		where ssoId = #{ssoId}
+
+	</update>
+
+	获取注册用户列表
+	<select id="getUserList" parameterType="map" resultType="map">
+		select
+		IFNULL(ssoId,'') AS ssoId,
+		IFNULL(name,'') AS name,
+		IFNULL(tel,'') AS tel,
+		IFNULL(type,'')
+		AS type,
+		IFNULL(registerTime,'')
+		AS registerTime,
+		IFNULL(rid,'') AS rid,
+		IFNULL(rtel,'') AS rtel,
+		IFNULL(mac,'') AS mac,
+		IFNULL(lastLogin,'')
+		AS
+		lastLogin
+		from user
+		<where>
+			<if test="tel!=null and tel!=''"> 
+			<![CDATA[  
+            tel LIKE CONCAT(CONCAT('%',#{tel}),'%')
+			]]>
+			</if>
+
+			<if test="startTime!=null and startTime!=''">  
+			<![CDATA[  
+           and registerTime >= #{startTime} 
+			]]>
+			</if>
+
+			<if test="endTime!=null and endTime!=''">  
+			<![CDATA[  
+           and registerTime <=  #{endTime}
+			]]>
+			</if>
+
+			<if test="type!=null and type!=''">
+				and type in
+				<foreach collection="type" index="index" item="item" open="("
+					separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+
+			<if test="mode!=null and mode=='1'.toString()">   
+           <![CDATA[  
+           and rid is null
+			]]>
+			</if>
+
+			<if test="mode!=null and mode=='2'.toString()">   
+           <![CDATA[  
+           and rid is not null
+			]]>
+			</if>
+			
+			<if test="rid !=null and rid != '' ">            
+           		and rid = #{rid }
+			</if>
+		</where>
+		<choose>
+			<when test="orderBy!=null and orderBy!=''">
+				order by ${orderBy} ${sort}
+			</when>
+			<otherwise>
+				order by registerTime desc
+			</otherwise>
+		</choose>
+		<if test="start+','+end!='0,0' and start+','+end!='null,null' ">
+			limit #{start},#{end}
+		</if>
+	</select>
+
+	按查询条件获取注册用户总数
+	<select id="getUserListCount" parameterType="map" resultType="int">
+		select count(1) from user
+		<where>
+			<if test="tel!=null and tel!=''"> 
+			<![CDATA[  
+            tel LIKE CONCAT(CONCAT('%',#{tel}),'%')
+			]]>
+			</if>
+
+			<if test="startTime!=null and startTime!=''">  
+			<![CDATA[  
+           and registerTime >= #{startTime} 
+			]]>
+			</if>
+
+
+			<if test="endTime!=null and endTime!=''">  
+			<![CDATA[  
+           and registerTime <=  #{endTime}
+			]]>
+			</if>
+
+			<if test="type!=null and type!=''">
+				and type in
+				<foreach collection="type" index="index" item="item" open="("
+					separator="," close=")">
+					#{item}
+				</foreach>
+
+			</if>
+
+			<if test="mode!=null and mode=='1'.toString()">   
+           <![CDATA[  
+           and rid is null
+			]]>
+			</if>
+
+			<if test="mode!=null and mode=='2'.toString()">   
+           <![CDATA[  
+           and rid is not null
+			]]>
+			</if>
+			
+			<if test="rid !=null and rid != '' ">               
+           		and rid = #{rid }		
+			</if>
+		</where>
+	</select>
+
+	根据imgId获取 imgUrl
+	<select id="getImgUrl" parameterType="string" resultType="string">
+		select
+		IFNULL(url,'') AS imgUrl
+		from attachment t where
+		t.id=#{imgId}
+	</select>
+
+	更新用户mac地址信息
+	<update id="updateUserMac" parameterType="user">
+		update user
+		<set>
+			<if test="mac != null and mac!=''">
+				mac = #{mac}
+			</if>
+		</set>
+		where ssoId = #{ssoId}
+
+	</update>
+
+	查询我的邀约新人
+	<select id="getUserRidList" parameterType="map" resultType="User">
+		select
+		IFNULL(tel,'') AS tel,
+		IFNULL(registerTime,'') AS
+		registerTime
+		from
+		user 
+		<where>
+			<if test="openId != null and openId != ''">
+				rid=#{openId}
+			</if>
+		</where>
+		<choose>
+			<when test="orderBy !=null and orderBy!=''">
+				order by ${orderBy} ${sort}
+			</when>
+			<otherwise>
+				order by t.registerTime desc
+			</otherwise>
+		</choose>
+		<if
+			test="start!=null and end!=null and start+','+end!='0,0' and start+','+end!='null,null'">
+			limit #{start},#{end}
+		</if>
+	</select>
+
+	获取推荐用户总数
+	<select id="getUserCount" parameterType="map" resultType="int">
+		select count(1)
+		from
+		user 
+		<where>
+			<if test="openId != null and openId != ''">
+				rid=#{openId}
+			</if>
+		</where>
+	</select>
+	
+	统计邀约新人总数并排序(num:只统计邀约新人总数大于num的
+	<select id="getRecommendSort" parameterType="map" resultType="RecommendUser">
+		SELECT u.tel AS tel,u.ssoid AS ssoid, r.count AS COUNT
+		FROM user u
+		JOIN (
+		SELECT s.rid as rid, COUNT(s.rid) AS COUNT
+		FROM user s
+		WHERE s.rtel != '10000000000'
+		<if test="startTime !=null and startTime != '' ">
+			<![CDATA[  
+			AND registerTime >= #{startTime}
+			]]>
+		</if>
+		<if test="endTime !=null and endTime != '' ">
+		    <![CDATA[  
+			AND registerTime <= #{endTime}
+			]]>
+		</if>
+		GROUP BY s.rid 
+		HAVING s.rid is not null
+		<if test="num != null and num != ''">
+				<![CDATA[  
+				AND COUNT(s.rid) > #{num}
+				]]>
+		</if>
+		) r ON u.ssoid = r.rid 
+		ORDER BY count desc,tel
+		<if test="start!=null and end!=null and start+','+end!='0,0' and start+','+end!='null,null'">
+			limit #{start},#{end}
+		</if>
+	</select>
+	
+	统计邀约过新人总数
+	<select id="getRecommendCount" parameterType="map" resultType="int">
+		SELECT count(1) 
+		FROM (
+			SELECT s.rid as rid, COUNT(s.rid) AS COUNT
+			FROM user s
+			WHERE s.rtel != '10000000000'
+			<if test="startTime !=null and startTime != '' ">
+				<![CDATA[  
+				AND registerTime >= #{startTime}
+				]]>
+			</if>
+			<if test="endTime !=null and endTime != '' ">
+		  	  <![CDATA[  
+				AND registerTime <= #{endTime}
+				]]>
+			</if>
+			GROUP BY s.rid 
+			HAVING s.rid is not null
+			<if test="num != null and num != ''">
+				<![CDATA[  
+				AND COUNT(s.rid) > #{num}
+				]]>
+			</if>
+			) r 
+	</select>
+	
+	统计邀约新人总数大于某个值得人数(num:只统计邀约新人总数大于num的)
+	<select id="getRecommendGreaterThan" parameterType="map" resultType="int">
+		SELECT COUNT(1) 
+		FROM (		
+			SELECT s.rid as rid, COUNT(s.rid) AS COUNT
+			FROM user s
+			WHERE s.rtel != '10000000000'
+			GROUP BY s.rid 
+			HAVING s.rid is not null
+			<if test="num != null and num != ''">
+				<![CDATA[  
+				AND COUNT(s.rid) > #{num}
+				AND rid not like "%_frozen"
+				]]>
+		    </if>
+		) r 
+	</select>
+	 -->
+</mapper> 

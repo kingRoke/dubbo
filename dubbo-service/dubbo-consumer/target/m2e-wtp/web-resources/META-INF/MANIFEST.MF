@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Implementation-Title: dubbo-consumer
+Implementation-Version: 0.0.1-SNAPSHOT
+Built-By: 45045
+Implementation-Vendor-Id: com.roke.cn
+Build-Jdk: 1.8.0_151
+Implementation-URL: http://projects.spring.io/spring-boot/dubbo-servic
+ e/dubbo-consumer/
+Created-By: Maven Integration for Eclipse
+Implementation-Vendor: Pivotal Software, Inc.
+
